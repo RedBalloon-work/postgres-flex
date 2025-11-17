@@ -46,12 +46,12 @@ jobs:
           file: ./pg${{ matrix.pg_version.major }}/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/postgres-flex:${{ matrix.pg_version.major }}
-            ghcr.io/${{ github.repository }}/postgres-flex:${{ matrix.pg_version.full }}
-            ghcr.io/${{ github.repository }}/postgres-flex:${{ steps.tag.outputs.TAG }}-${{ matrix.pg_version.major }}
+            ghcr.io/${{ github.repository }}:${{ matrix.pg_version.major }}
+            ghcr.io/${{ github.repository }}:${{ matrix.pg_version.full }}
+            ghcr.io/${{ github.repository }}:${{ steps.tag.outputs.TAG }}-${{ matrix.pg_version.major }}
           build-args: |
             PG_VERSION=${{ matrix.pg_version.full }}
-            PG_MAJOR_VERSION=${{ matrix.pg_version.major }}
+            PG_MAJOR_VERSION=${{ matrix.pg_version.full }}
             VERSION=${{ steps.tag.outputs.TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
