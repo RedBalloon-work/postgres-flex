@@ -80,6 +80,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build, unit, staticcheck, errcheck]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    permissions:
+      contents: read
+      packages: write
     strategy:
       matrix:
         pg_version:
