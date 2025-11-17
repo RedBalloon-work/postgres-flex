@@ -105,13 +105,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=${{ matrix.pg_version.major }}-latest
+
       - name: Build and push latest
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./pg${{ matrix.pg_version.major }}/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ matrix.pg_version.major }}-latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             PG_VERSION=${{ matrix.pg_version.full }}
             PG_MAJOR_VERSION=${{ matrix.pg_version.major }}
