@@ -127,6 +127,28 @@ func (*BarmanRestore) walReplayAndReset(ctx context.Context, node *Node) error {
 	// Stop the postgres process
 	svisor.Stop()
 
+	// Clear PITR recovery settings to prevent issues when cloning standbys from this primary.
+	// These settings persist in postgresql.internal.conf and can cause standbys to promote
+	// themselves after reaching the recovery target. We must clear them from the internalConfig
+	// map and rewrite the file AFTER postgres has stopped to ensure they don't get re-added.
+	recoverySettings := []string{
+		"recovery_target_action",
+		"recovery_target_timeline",
+		"recovery_target_inclusive",
+		"recovery_target",
+		"recovery_target_name",
+		"recovery_target_time",
+		"restore_command",
+	}
+	for _, setting := range recoverySettings {
+		delete(node.PGConfig.internalConfig, setting)
+	}
+
+	// Rewrite postgresql.internal.conf without the recovery settings
+	if err := writeInternalConfigFile(&node.PGConfig); err != nil {
+		return fmt.Errorf("failed to write internal config file: %s", err)
+	}
+
 	// Revert back to the original config file
 	if err := restoreHBAFile(); err != nil {
 		return fmt.Errorf("failed to restore original pg_hba.conf: %s", err)
